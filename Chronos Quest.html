@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)file:///Users/admin/Downloads/10pm%20version.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos Quest</title>
+    <!-- Tailwind CSS -->
+    <script src="./Chronos Quest_files/saved_resource"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="./Chronos Quest_files/css2" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1d263a, #2c3e50);
+            transition: all 0.5s ease-in-out;
+        }
+        .task-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        .task-card:hover {
+            cursor: grab;
+        }
+        .task-card:active {
+            cursor: grabbing;
+        }
+        /* Flex container for quadrant to keep title fixed and tasks scrollable */
+        .quadrant {
+            background-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            min-height: 150px;
+        }
+        /* Styling for quadrant titles to be prominent and not shrink */
+        .quadrant-title {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: white; /* Keep text color white */
+            padding: 0.5rem;
+        }
+        .bg-gradient-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .task-card.dragging {
+            opacity: 0.5;
+            border: 2px dashed #9ca3af;
+        }
+        .message-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        /* Specific styling for the task zones inside quadrants */
+        .task-zone {
+            flex-grow: 1; 
+            overflow-y: auto;
+        }
+        /* Revised inbox styling for better balance */
+        #inbox-quadrant {
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: hidden;
+        }
+        /* Make the task zone inside the inbox scrollable */
+        #inbox-tasks {
+            overflow-y: auto;
+        }
+
+        .schedule-day-container {
+            min-width: 100px;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.inset-0{inset:0px}.z-50{z-index:50}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-4{height:1rem}.h-full{height:100%}.min-h-screen{min-height:100vh}.w-1\/2{width:50%}.w-full{width:100%}.max-w-7xl{max-width:80rem}.max-w-lg{max-width:32rem}.flex-grow{flex-grow:1}.scale-95{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.grid-rows-2{grid-template-rows:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.border-4{border-width:4px}.border-t{border-top-width:1px}.border-blue-500{--tw-border-opacity:1;border-color:rgb(59 130 246 / var(--tw-border-opacity, 1))}.border-gray-600{--tw-border-opacity:1;border-color:rgb(75 85 99 / var(--tw-border-opacity, 1))}.border-green-500{--tw-border-opacity:1;border-color:rgb(34 197 94 / var(--tw-border-opacity, 1))}.border-red-500{--tw-border-opacity:1;border-color:rgb(239 68 68 / var(--tw-border-opacity, 1))}.border-yellow-500{--tw-border-opacity:1;border-color:rgb(234 179 8 / var(--tw-border-opacity, 1))}.bg-blue-500{--tw-bg-opacity:1;background-color:rgb(59 130 246 / var(--tw-bg-opacity, 1))}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-gray-700{--tw-bg-opacity:1;background-color:rgb(55 65 81 / var(--tw-bg-opacity, 1))}.bg-gray-800{--tw-bg-opacity:1;background-color:rgb(31 41 55 / var(--tw-bg-opacity, 1))}.bg-gray-900{--tw-bg-opacity:1;background-color:rgb(17 24 39 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-green-600{--tw-bg-opacity:1;background-color:rgb(22 163 74 / var(--tw-bg-opacity, 1))}.bg-purple-500{--tw-bg-opacity:1;background-color:rgb(168 85 247 / var(--tw-bg-opacity, 1))}.bg-red-600{--tw-bg-opacity:1;background-color:rgb(220 38 38 / var(--tw-bg-opacity, 1))}.bg-opacity-75{--tw-bg-opacity:0.75}.p-2{padding:0.5rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.pt-2{padding-top:0.5rem}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-5xl{font-size:3rem;line-height:1}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250 / var(--tw-text-opacity, 1))}.text-gray-100{--tw-text-opacity:1;color:rgb(243 244 246 / var(--tw-text-opacity, 1))}.text-gray-200{--tw-text-opacity:1;color:rgb(229 231 235 / var(--tw-text-opacity, 1))}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-green-400{--tw-text-opacity:1;color:rgb(74 222 128 / var(--tw-text-opacity, 1))}.text-purple-400{--tw-text-opacity:1;color:rgb(192 132 252 / var(--tw-text-opacity, 1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-yellow-400{--tw-text-opacity:1;color:rgb(250 204 21 / var(--tw-text-opacity, 1))}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.duration-500{transition-duration:500ms}.ease-in-out{transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1)}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216 / var(--tw-bg-opacity, 1))}.hover\:bg-green-700:hover{--tw-bg-opacity:1;background-color:rgb(21 128 61 / var(--tw-bg-opacity, 1))}.hover\:bg-red-700:hover{--tw-bg-opacity:1;background-color:rgb(185 28 28 / var(--tw-bg-opacity, 1))}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 768px){.md\:w-1\/5{width:20%}.md\:w-4\/5{width:80%}.md\:flex-row{flex-direction:row}.md\:gap-10{gap:2.5rem}.md\:p-10{padding:2.5rem}.md\:p-6{padding:1.5rem}.md\:p-8{padding:2rem}.md\:text-left{text-align:left}}</style></head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 text-white">
+
+    <!-- Game Container -->
+    <div id="game-container" class="bg-gradient-glass rounded-3xl shadow-2xl p-6 md:p-10 w-full max-w-7xl flex flex-col md:flex-row gap-6 md:gap-10">
+        
+        <!-- Game Info and Stats (Left Panel - smaller) -->
+        <div class="md:w-1/5 flex flex-col gap-6">
+            <div class="text-center md:text-left">
+                <h1 class="text-3xl font-bold text-gray-100">Chronos Quest</h1>
+                <p class="text-lg text-gray-300 mt-2">The DP Student's Dilemma</p>
+            </div>
+            
+            <!-- Stats -->
+            <div class="bg-gradient-glass rounded-2xl p-4 md:p-6 shadow-inner">
+                <h2 class="text-2xl font-semibold mb-3 text-gray-200">Stats</h2>
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-300 font-medium flex items-center">🎓 Grade</span>
+                        <div class="bg-gray-700 w-1/2 h-4 rounded-full overflow-hidden">
+                            <div id="ib-grade-bar" class="h-full bg-blue-500 transition-all duration-500 ease-in-out" style="width: 50%;"></div>
+                        </div>
+                        <span id="ib-grade-value" class="text-blue-400 font-bold">4</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-300 font-medium flex items-center">⚡️ Energy</span>
+                        <div class="bg-gray-700 w-1/2 h-4 rounded-full overflow-hidden">
+                            <div id="energy-bar" class="h-full bg-green-500 transition-all duration-500 ease-in-out" style="width: 50%;"></div>
+                        </div>
+                        <span id="energy-value" class="text-green-400 font-bold">50</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-300 font-medium flex items-center">❤️ Well-Being</span>
+                        <div class="bg-gray-700 w-1/2 h-4 rounded-full overflow-hidden">
+                            <div id="well-being-bar" class="h-full bg-purple-500 transition-all duration-500 ease-in-out" style="width: 50%;"></div>
+                        </div>
+                        <span id="well-being-value" class="text-purple-400 font-bold">50</span>
+                    </div>
+                    <div class="flex items-center justify-between mt-4 pt-2 border-t border-gray-600">
+                        <span class="text-gray-300 font-bold text-lg">Score</span>
+                        <span id="success-score-value" class="text-yellow-400 font-extrabold text-2xl">250</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day Tracker -->
+            <div class="bg-gradient-glass rounded-2xl p-4 md:p-6 shadow-inner text-center">
+                <h2 class="text-xl font-semibold text-gray-200">Day Progress</h2>
+                <p id="day-counter" class="text-5xl font-bold text-gray-100 mt-3">Day 1</p>
+                <button id="next-day-btn" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition-transform transform hover:scale-105">End Day &amp; Sleep</button>
+            </div>
+        </div>
+
+        <!-- The Eisenhower Matrix & Schedule Bar (Right Panel - larger) -->
+        <div class="md:w-4/5 flex flex-col gap-4">
+            <!-- Weekly Schedule Bar -->
+            <div id="schedule-bar" class="bg-gradient-glass rounded-2xl p-4 shadow-inner">
+                <h3 class="text-xl font-bold text-gray-200 mb-2">Weekly Schedule</h3>
+                <div id="schedule-day-cards" class="flex overflow-x-auto gap-2 p-2">
+                    <!-- Day schedule containers will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- New Task Inbox -->
+            <div id="inbox-quadrant" class="bg-gray-800 border-4 border-gray-600 rounded-3xl p-4 flex flex-col items-center shadow-lg">
+                <h3 class="quadrant-title text-xl font-bold text-gray-100 mb-2">Inbox (Drag to a Quadrant)</h3>
+                <div id="inbox-tasks" class="task-zone w-full flex flex-wrap gap-2 p-2 justify-center"></div>
+            </div>
+
+            <!-- The 2x2 Quadrant Grid -->
+            <div class="flex-grow grid grid-cols-2 grid-rows-2 gap-4">
+                <!-- Do Now Quadrant -->
+                <div id="do-quadrant" class="quadrant border-4 border-red-500 rounded-3xl p-4 shadow-lg">
+                    <h3 class="quadrant-title text-center text-xl font-bold text-red-400 mb-2">Urgent &amp; Important</h3>
+                    <div id="do-tasks" class="task-zone w-full flex flex-col gap-2 p-2"></div>
+                </div>
+
+                <!-- Schedule Quadrant -->
+                <div id="schedule-quadrant" class="quadrant border-4 border-blue-500 rounded-3xl p-4 shadow-lg">
+                    <h3 class="quadrant-title text-center text-xl font-bold text-blue-400 mb-2">Not Urgent &amp; Important</h3>
+                    <div id="schedule-tasks" class="task-zone w-full flex flex-col gap-2 p-2"></div>
+                </div>
+
+                <!-- Delegate Quadrant -->
+                <div id="delegate-quadrant" class="quadrant border-4 border-yellow-500 rounded-3xl p-4 shadow-lg">
+                    <h3 class="quadrant-title text-center text-xl font-bold text-yellow-400 mb-2">Urgent &amp; Not Important</h3>
+                    <div id="delegate-tasks" class="task-zone w-full flex flex-col gap-2 p-2"></div>
+                </div>
+
+                <!-- Eliminate Quadrant -->
+                <div id="eliminate-quadrant" class="quadrant border-4 border-green-500 rounded-3xl p-4 shadow-lg">
+                    <h3 class="quadrant-title text-center text-xl font-bold text-green-400 mb-2">Not Urgent &amp; Not Important</h3>
+                    <div id="eliminate-tasks" class="task-zone w-full flex flex-col gap-2 p-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for Difficulty Selection -->
+    <div id="difficulty-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-900 text-white rounded-2xl p-8 max-w-lg w-full text-center shadow-2xl transform scale-95 transition-transform duration-300">
+            <h2 class="text-3xl font-bold text-gray-100 mb-4">Select Difficulty</h2>
+            <p class="text-gray-300 mb-6">Choose how many days you have to reach a score of 500:</p>
+            <div class="flex flex-col gap-4">
+                <button id="easy-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 active:scale-95">Easy (7 Days)</button>
+                <button id="normal-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 active:scale-95">Normal (5 Days)</button>
+                <button id="hard-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 active:scale-95">Hard (3 Days)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Welcome, Instructions, and End-Game -->
+    <div id="modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-gray-900 text-white rounded-2xl p-8 max-w-lg w-full text-center shadow-2xl transform scale-95 transition-transform duration-300">
+            <h2 id="modal-title" class="text-3xl font-bold text-gray-100 mb-4">Welcome to Chronos Quest!</h2>
+            <p id="modal-content" class="text-gray-300 mb-6">
+                Your mission is to reach a Success Score of 500 in <span id="game-days"></span> days by effectively managing your tasks with the Eisenhower Matrix.
+                <br><br>
+                **Drag and drop** tasks from the **Inbox** into one of the four quadrants. The game will respond to your choice immediately. Be mindful of your Energy and Well-Being!
+            </p>
+            <button id="modal-close-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 active:scale-95">Start Game</button>
+        </div>
+    </div>
+
+    <!-- Modal for Scheduling Tasks -->
+    <div id="schedule-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-gray-900 text-white rounded-2xl p-8 max-w-lg w-full text-center shadow-2xl">
+            <h3 class="text-2xl font-bold text-gray-100 mb-4">Schedule Your Task</h3>
+            <p class="text-gray-300 mb-6">Select a day to schedule the task:</p>
+            <div class="grid grid-cols-3 gap-4" id="schedule-day-buttons-container">
+                <!-- Day buttons will be dynamically added here -->
+            </div>
+            <button id="cancel-schedule-btn" class="mt-4 text-gray-400 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Message Box -->
+    <div id="message-box" class="message-box"></div>
+
+    <script>
+        // Game State Variables
+        let ibGrade;
+        let energy;
+        let wellBeing;
+        let successScore;
+        let day;
+        let MAX_DAYS;
+        const WIN_SCORE_THRESHOLD = 500;
+        const INBOX_TASK_LIMIT = 5;
+        let BURNOUT_THRESHOLD;
+        
+        let weeklySchedule = {};
+        let tasksOnBoard = [];
+        let tasksPool = [];
+        let currentlyScheduledTask = null;
+
+        // UI Elements
+        const ibGradeValueEl = document.getElementById('ib-grade-value');
+        const ibGradeBarEl = document.getElementById('ib-grade-bar');
+        const energyValueEl = document.getElementById('energy-value');
+        const energyBarEl = document.getElementById('energy-bar');
+        const wellBeingValueEl = document.getElementById('well-being-value');
+        const wellBeingBarEl = document.getElementById('well-being-bar');
+        const successScoreValueEl = document.getElementById('success-score-value');
+        const dayCounterEl = document.getElementById('day-counter');
+        const nextDayBtn = document.getElementById('next-day-btn');
+        const scheduleDayCardsContainer = document.getElementById('schedule-day-cards');
+        const taskZones = {
+            inbox: document.getElementById('inbox-tasks'),
+            do: document.getElementById('do-tasks'),
+            schedule: document.getElementById('schedule-tasks'),
+            delegate: document.getElementById('delegate-tasks'),
+            eliminate: document.getElementById('eliminate-tasks')
+        };
+        const difficultyModal = document.getElementById('difficulty-modal');
+        const easyBtn = document.getElementById('easy-btn');
+        const normalBtn = document.getElementById('normal-btn');
+        const hardBtn = document.getElementById('hard-btn');
+        const gameDaysSpan = document.getElementById('game-days');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const scheduleModal = document.getElementById('schedule-modal');
+        const scheduleDayBtnsContainer = document.getElementById('schedule-day-buttons-container');
+        const cancelScheduleBtn = document.getElementById('cancel-schedule-btn');
+        const messageBox = document.getElementById('message-box');
+
+        // Task Data (Expanded Library with social tasks)
+        const allTasks = [
+            { id: 't1', name: 'Psychology IA', desc: 'Research, design, and write your Psychology Internal Assessment.', energyCost: 40, ibGradeReward: 1.0, wellBeingReward: -5, penalty: { ibGrade: -1.0, wellBeing: -10 }, academic: true, category: 'Education', deadlineDay: 2, isMultiDay: true, totalChunks: 2, chunksDone: 0 },
+            { id: 't2', name: 'Studying for Language B summative', desc: 'Prepare for the upcoming summative assessment in your second language.', energyCost: 30, ibGradeReward: 0.5, wellBeingReward: -2, penalty: { ibGrade: -0.5, wellBeing: -5 }, academic: true, category: 'Education', deadlineDay: 1 },
+            { id: 't3', name: 'Math Homework', desc: 'Practice problems to solidify understanding.', energyCost: 20, ibGradeReward: 0.2, wellBeingReward: -1, penalty: { ibGrade: -0.2, wellBeing: -2 }, academic: true, category: 'Education', deadlineDay: 1 },
+            { id: 't4', name: 'CAS Project', desc: 'Working on your Creativity, Activity, Service project.', energyCost: 35, ibGradeReward: 0.5, wellBeingReward: 10, penalty: { wellBeing: -5 }, academic: false, category: 'Education', deadlineDay: 3, isMultiDay: true, totalChunks: 2, chunksDone: 0 },
+            { id: 't5', name: 'Go for a run', desc: 'Clears the mind and boosts physical health.', energyCost: -10, ibGradeReward: 0, wellBeingReward: 15, academic: false, category: 'Health', type: 'restorative' },
+            { id: 't6', name: 'Read a book', desc: 'An hour of non-academic reading to unwind.', energyCost: -5, ibGradeReward: 0, wellBeingReward: 10, academic: false, category: 'Health', type: 'restorative' },
+            { id: 't7', name: 'Write a blog post', desc: 'A creative outlet. Important for CAS.', energyCost: 25, ibGradeReward: 0, wellBeingReward: 10, academic: false, category: 'Creativity', deadlineDay: 2 },
+            { id: 't8', name: 'TOK Draft', desc: 'Write the first draft of your Theory of Knowledge essay.', energyCost: 15, ibGradeReward: 0.1, wellBeingReward: 5, academic: true, category: 'Education', deadlineDay: 1 },
+            { id: 't9', name: 'Clean your room', desc: 'Helps reduce stress and a clean environment is good for your well-being.', energyCost: 10, ibGradeReward: 0, wellBeingReward: 5, academic: false, category: 'Home', type: 'restorative' },
+            { id: 't10', name: 'EE Research', desc: 'Long-term research for your Extended Essay. Crucial for long-term success.', energyCost: 50, ibGradeReward: 1.0, wellBeingReward: 5, penalty: { ibGrade: -1.0, wellBeing: -15 }, academic: true, category: 'Education', deadlineDay: 4, isMultiDay: true, totalChunks: 3, chunksDone: 0 },
+            { id: 't11', name: 'Call a friend', desc: 'Catch up with a friend and boost your social connections.', energyCost: 15, ibGradeReward: 0, wellBeingReward: 10, academic: false, category: 'Social', type: 'restorative' },
+            { id: 't12', name: 'Attend a school club meeting', desc: 'Socialize and engage in an extracurricular activity.', energyCost: 15, ibGradeReward: 0, wellBeingReward: 15, academic: false, category: 'Social', type: 'restorative' },
+            { id: 't13', name: 'Watch a movie', desc: 'Relax and unwind with a good movie.', energyCost: -10, ibGradeReward: 0, wellBeingReward: 20, academic: false, category: 'Health', type: 'restorative' },
+            { id: 't14', name: 'Meditate for 10 minutes', desc: 'A quick way to clear your head and reduce stress.', energyCost: -5, ibGradeReward: 0, wellBeingReward: 10, academic: false, category: 'Health', type: 'restorative' },
+            { id: 't15', name: 'Prepare a healthy meal', desc: 'Fuel your body and mind with a nutritious meal.', energyCost: -10, ibGradeReward: 0, wellBeingReward: 15, academic: false, category: 'Health', type: 'restorative' },
+            { id: 't16', name: 'Group Study for Physics', desc: 'Collaborate with friends on a tough topic. Boosts grade and well-being.', energyCost: 25, ibGradeReward: 0.3, wellBeingReward: 5, academic: true, category: 'Education', deadlineDay: 3 },
+            { id: 't17', name: 'Volunteer at a local shelter', desc: 'A fulfilling and meaningful CAS activity.', energyCost: 20, ibGradeReward: 0, wellBeingReward: 20, academic: false, category: 'Service', deadlineDay: 5 }
+        ];
+
+        // Filter tasks into separate pools
+        const restorativeTasks = allTasks.filter(task => task.type === 'restorative');
+        const nonRestorativeTasks = allTasks.filter(task => task.type !== 'restorative');
+
+
+        // Function to update the UI bars and values
+        function updateUI() {
+            ibGradeBarEl.style.width = `${(ibGrade / 7) * 100}%`;
+            ibGradeValueEl.textContent = ibGrade.toFixed(2);
+            energyBarEl.style.width = `${Math.max(0, energy)}%`;
+            energyValueEl.textContent = energy.toFixed(0);
+            wellBeingBarEl.style.width = `${Math.max(0, wellBeing)}%`;
+            wellBeingValueEl.textContent = wellBeing.toFixed(0);
+            successScoreValueEl.textContent = successScore.toFixed(0);
+            dayCounterEl.textContent = `Day ${day}`;
+        }
+        
+        // Utility function to show messages
+        function showMessage(msg, color = 'blue') {
+            const msgEl = document.createElement('div');
+            msgEl.className = `p-3 rounded-lg shadow-lg text-white mb-2 transform transition-all duration-300 translate-y-full`;
+            
+            let bgColor = '';
+            switch(color) {
+                case 'green': bgColor = 'bg-green-500'; break;
+                case 'red': bgColor = 'bg-red-500'; break;
+                case 'blue': bgColor = 'bg-blue-500'; break;
+                case 'yellow': bgColor = 'bg-yellow-500'; break;
+                default: bgColor = 'bg-gray-500';
+            }
+            msgEl.classList.add(bgColor);
+            msgEl.textContent = msg;
+
+            messageBox.appendChild(msgEl);
+            setTimeout(() => {
+                msgEl.style.transform = 'translateY(0)';
+            }, 10);
+            
+            setTimeout(() => {
+                msgEl.style.transform = 'translateY(-150%)';
+                msgEl.style.opacity = '0';
+            }, 3000);
+
+            setTimeout(() => {
+                msgEl.remove();
+            }, 3500);
+        }
+
+        // Function to create a task card with detailed stats
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.id = `task-${task.id}`;
+            card.className = `task-card bg-gray-700 text-white p-3 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 draggable`;
+            card.setAttribute('draggable', 'true');
+            card.dataset.taskId = task.id;
+            
+            let statsHtml = `
+                <h4 class="font-bold text-gray-100">${task.name}</h4>
+                <p class="text-sm text-gray-400 mb-2">${task.desc}</p>
+            `;
+
+            if (task.isMultiDay) {
+                statsHtml += `<p class="text-xs font-bold text-blue-300">Progress: ${task.chunksDone}/${task.totalChunks} Chunks</p>`;
+            }
+
+            if (task.deadlineDay) {
+                let dueDateText;
+                let dueDateClass = 'text-red-300';
+                if (task.deadlineDay === day) {
+                    dueDateText = "Due Today!";
+                    dueDateClass = 'text-red-500';
+                } else if (task.deadlineDay < day) {
+                    dueDateText = "Overdue!";
+                    dueDateClass = 'text-red-700';
+                } else {
+                    dueDateText = `Due Day ${task.deadlineDay}`;
+                }
+                statsHtml += `<p class="text-xs font-bold ${dueDateClass} mb-1">${dueDateText}</p>`;
+            }
+
+            statsHtml += `
+                <div class="flex justify-between items-center text-sm font-semibold mt-2">
+            `;
+
+            if (task.type === 'restorative') {
+                statsHtml += `
+                    <span class="text-green-300">❤️ +${task.wellBeingReward} Well-Being</span>
+                    <span class="text-green-300">⚡️ ${-task.energyCost} Energy</span>
+                `;
+            } else {
+                statsHtml += `
+                    <span class="text-blue-300">🎓 +${task.ibGradeReward} Grade</span>
+                    <span class="text-yellow-300">⚡️ -${task.energyCost} Energy</span>
+                    <span class="text-purple-300">❤️ ${task.wellBeingReward > 0 ? '+' : ''}${task.wellBeingReward} Well-Being</span>
+                `;
+            }
+
+            statsHtml += `</div>`;
+            card.innerHTML = statsHtml;
+            
+            card.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', task.id);
+                card.classList.add('dragging');
+            });
+            card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+            return card;
+        }
+
+        function renderTasks() {
+            Object.values(taskZones).forEach(zone => {
+                zone.innerHTML = '';
+            });
+
+            tasksOnBoard.forEach(task => {
+                const card = createTaskCard(task);
+                taskZones[task.zone].appendChild(card);
+
+                if (task.isMultiDay && task.zone === 'do' && !task.isComplete) {
+                    const cardEl = document.getElementById(`task-${task.id}`);
+                    if (cardEl) {
+                        cardEl.setAttribute('draggable', 'false');
+                        const chunkOptionsEl = document.createElement('div');
+                        chunkOptionsEl.className = 'flex justify-between mt-2 gap-2';
+                        chunkOptionsEl.innerHTML = `
+                            <button id="chunk-btn-${task.id}" class="w-1/2 p-2 text-sm bg-blue-500 rounded-lg hover:bg-blue-600">Do Chunk</button>
+                            <button id="all-btn-${task.id}" class="w-1/2 p-2 text-sm bg-red-500 rounded-lg hover:bg-red-600">Do All</button>
+                        `;
+                        cardEl.appendChild(chunkOptionsEl);
+
+                        document.getElementById(`chunk-btn-${task.id}`).onclick = () => processChunk(task.id);
+                        document.getElementById(`all-btn-${task.id}`).onclick = () => processAll(task.id);
+                    }
+                }
+            });
+        }
+        
+        function renderWeeklySchedule() {
+            scheduleDayCardsContainer.innerHTML = '';
+            for (let i = 1; i <= MAX_DAYS; i++) {
+                const dayCard = document.createElement('div');
+                dayCard.className = `schedule-day-container p-3 rounded-lg bg-gray-800 text-white flex-shrink-0 flex flex-col justify-between h-24 shadow-md transition-all duration-300 ${i === day ? 'bg-blue-600' : 'hover:bg-gray-700'}`;
+                dayCard.innerHTML = `
+                    <h4 class="font-bold text-lg">Day ${i}</h4>
+                    <p class="text-sm mt-1">${weeklySchedule[i] ? weeklySchedule[i].length : 0} tasks</p>
+                `;
+                scheduleDayCardsContainer.appendChild(dayCard);
+            }
+        }
+
+        function setupDragAndDrop() {
+            Object.values(taskZones).forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('border-dashed', 'border-4', 'border-gray-500');
+                });
+                zone.addEventListener('dragleave', (e) => {
+                    zone.classList.remove('border-dashed', 'border-4', 'border-gray-500');
+                });
+                zone.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.closest('.task-zone').classList.remove('border-dashed', 'border-4', 'border-gray-500');
+            const taskId = e.dataTransfer.getData('text/plain');
+            const targetZoneEl = e.target.closest('.task-zone');
+            if (!targetZoneEl) return;
+            const targetQuadrantId = targetZoneEl.id.replace('-tasks', '');
+
+            const task = tasksOnBoard.find(t => t.id === taskId);
+            if (!task) {
+                renderTasks();
+                return;
+            }
+            
+            if (targetQuadrantId === 'schedule') {
+                currentlyScheduledTask = task;
+                showScheduleModal();
+            } else {
+                task.zone = targetQuadrantId;
+                if (targetQuadrantId === 'do') {
+                    // For single-day tasks, moving them to 'do' is a form of 'completion' for the day
+                    if (!task.isMultiDay) {
+                        task.completedToday = true;
+                        task.isComplete = true; // They are "one-and-done"
+                    }
+                }
+                renderTasks();
+            }
+        }
+        
+        function processChunk(taskId) {
+            const task = tasksOnBoard.find(t => t.id === taskId);
+            if (!task) return;
+
+            const energyCostPerChunk = task.energyCost / task.totalChunks;
+            if (energy < energyCostPerChunk && task.energyCost > 0) {
+                showMessage("Not enough energy to do a chunk!", "red");
+                return;
+            }
+
+            // Apply the cost and check for burnout
+            energy -= energyCostPerChunk;
+            if (energy <= BURNOUT_THRESHOLD) {
+                showBurnoutModal();
+                return;
+            }
+            
+            task.chunksDone++;
+            task.completedToday = true;
+
+            if (task.chunksDone >= task.totalChunks) {
+                task.isComplete = true;
+                showMessage(`Task "${task.name}" is now complete!`, 'green');
+            } else {
+                showMessage(`Completed a chunk of "${task.name}". Progress: ${task.chunksDone}/${task.totalChunks}`, 'yellow');
+            }
+
+            updateUI();
+            renderTasks();
+        }
+
+        function processAll(taskId) {
+            const task = tasksOnBoard.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const remainingEnergyCost = task.energyCost - (task.chunksDone * (task.energyCost / task.totalChunks));
+            
+            if (energy < remainingEnergyCost && task.energyCost > 0) {
+                showMessage("Not enough energy to complete the whole task!", "red");
+                return;
+            }
+
+            // Apply the cost and check for burnout
+            energy -= remainingEnergyCost;
+            if (energy <= BURNOUT_THRESHOLD) {
+                showBurnoutModal();
+                return;
+            }
+            
+            task.chunksDone = task.totalChunks;
+            task.isComplete = true;
+            task.completedToday = true;
+
+            showMessage(`Task "${task.name}" is now complete!`, 'green');
+            updateUI();
+            renderTasks();
+        }
+
+        function showScheduleModal() {
+            scheduleDayBtnsContainer.innerHTML = '';
+            for (let i = day + 1; i <= MAX_DAYS; i++) {
+                const dayBtn = document.createElement('button');
+                dayBtn.className = `p-4 bg-gray-700 rounded-lg font-bold hover:bg-blue-600 transition-colors`;
+                dayBtn.textContent = `Day ${i}`;
+                dayBtn.onclick = () => {
+                    scheduleTask(i);
+                    scheduleModal.classList.add('hidden');
+                };
+                scheduleDayBtnsContainer.appendChild(dayBtn);
+            }
+            scheduleModal.classList.remove('hidden');
+        }
+
+        function scheduleTask(scheduledDay) {
+            if (!currentlyScheduledTask) return;
+
+            if (!weeklySchedule[scheduledDay]) {
+                weeklySchedule[scheduledDay] = [];
+            }
+            weeklySchedule[scheduledDay].push(currentlyScheduledTask);
+            
+            tasksOnBoard = tasksOnBoard.filter(t => t.id !== currentlyScheduledTask.id);
+            
+            renderTasks();
+            renderWeeklySchedule();
+            
+            currentlyScheduledTask = null;
+        }
+        
+        function fillInbox() {
+            const tasksOnBoardIds = new Set(tasksOnBoard.map(t => t.id));
+            let newTasksForInbox = [];
+            
+            // Check if a restorative task exists on the board.
+            const hasRestorative = tasksOnBoard.some(task => task.type === 'restorative');
+            
+            // If not, add one from the restorative tasks pool.
+            if (!hasRestorative && restorativeTasks.length > 0) {
+                const newRestorativeTask = { ...restorativeTasks[Math.floor(Math.random() * restorativeTasks.length)] };
+                newRestorativeTask.id = `restorative-${Date.now()}`; 
+                newTasksForInbox.push(newRestorativeTask);
+                tasksOnBoardIds.add(newRestorativeTask.id);
+            }
+
+            // Fill the rest of the inbox with tasks from the main pool,
+            // making sure not to add any tasks that are already on the board.
+            let tasksAddedCount = newTasksForInbox.length;
+            while (tasksAddedCount < INBOX_TASK_LIMIT && tasksPool.length > 0) {
+                const nextTask = tasksPool.shift();
+                if (nextTask && !tasksOnBoardIds.has(nextTask.id)) {
+                    newTasksForInbox.push(nextTask);
+                    tasksOnBoardIds.add(nextTask.id);
+                    tasksAddedCount++;
+                }
+            }
+            
+            newTasksForInbox.forEach(task => {
+                task.zone = 'inbox';
+                task.completedToday = false; 
+                task.lastDayChunksDone = 0;
+            });
+            
+            tasksOnBoard = tasksOnBoard.concat(newTasksForInbox);
+            renderTasks();
+        }
+        
+        function endDay() {
+            if (day > MAX_DAYS) {
+                showFinalScore();
+                return;
+            }
+
+            let dailyGradeChange = 0;
+            let dailyWellBeingChange = 0;
+            let dailyEnergyChange = 0;
+            let nextDayTasks = [];
+            let restorativeTaskCompleted = false;
+
+            tasksOnBoard.forEach(task => {
+                const isOverdue = task.deadlineDay && task.deadlineDay < (day + 1);
+                
+                if (task.zone === 'do') {
+                    if (task.completedToday) {
+                        // Check if a restorative task was done today
+                        if(task.type === 'restorative') {
+                            restorativeTaskCompleted = true;
+                        }
+                        
+                        // Task was completed in 'do'
+                        if (task.isMultiDay) {
+                            const chunksCompletedToday = task.chunksDone - (task.lastDayChunksDone || 0);
+                            dailyGradeChange += (task.ibGradeReward / task.totalChunks) * chunksCompletedToday;
+                            dailyEnergyChange += (task.energyCost / task.totalChunks) * chunksCompletedToday * -1;
+                            dailyWellBeingChange += (task.wellBeingReward / task.totalChunks) * chunksCompletedToday;
+                            task.lastDayChunksDone = task.chunksDone;
+                            if (!task.isComplete) {
+                                nextDayTasks.push(task); // Keep incomplete multi-day tasks
+                            }
+                        } else {
+                            // Single-day task is done and removed.
+                            dailyGradeChange += task.ibGradeReward;
+                            dailyEnergyChange += task.energyCost * -1;
+                            dailyWellBeingChange += task.wellBeingReward;
+                        }
+                    } else {
+                        // Uncompleted task left in 'do'. Apply penalties and remove.
+                        if (task.penalty) {
+                            dailyGradeChange += (task.penalty.ibGrade || 0);
+                            dailyWellBeingChange += (task.penalty.wellBeing || 0);
+                        }
+                        showMessage(`Task "${task.name}" was left undone in the 'Urgent & Important' quadrant.`, 'red');
+                    }
+                } else if (task.zone === 'inbox' || task.zone === 'schedule' || task.zone === 'delegate' || task.zone === 'eliminate') {
+                    if (isOverdue) {
+                        // Overdue task in any quadrant is removed and penalized.
+                        if (task.penalty) {
+                            dailyGradeChange += (task.penalty.ibGrade || 0);
+                            dailyWellBeingChange += (task.penalty.wellBeing || 0);
+                        }
+                        showMessage(`Task "${task.name}" was not completed and is now overdue!`, 'red');
+                    } else if (task.zone !== 'delegate' && task.zone !== 'eliminate') {
+                        // Keep any tasks not in the delegate/eliminate quadrants if they aren't overdue.
+                        nextDayTasks.push(task);
+                    }
+                }
+            });
+
+            // Update stats
+            ibGrade = Math.min(7, Math.max(1, ibGrade + dailyGradeChange));
+            wellBeing = Math.min(100, Math.max(0, wellBeing + dailyWellBeingChange));
+            energy += dailyEnergyChange;
+            
+            // Check for burnout after applying daily energy change
+            if (energy <= BURNOUT_THRESHOLD) {
+                showBurnoutModal();
+                return;
+            }
+            
+            // Apply new daily energy reset logic
+            if (restorativeTaskCompleted) {
+                energy = 100;
+                showMessage("You completed a restorative task and feel fully refreshed!", 'green');
+            } else {
+                energy = 70; // Reset to a slightly lower value if no restorative tasks were done
+                showMessage("You didn't take a proper break, feeling a bit tired.", 'yellow');
+            }
+            
+            successScore += (ibGrade * energy * wellBeing) / 1000;
+            
+            // Prepare for the next day
+            tasksOnBoard = nextDayTasks.map(task => ({ ...task, completedToday: false }));
+            
+            day++;
+            updateUI();
+            
+            if (weeklySchedule[day]) {
+                tasksPool = tasksPool.concat(weeklySchedule[day]);
+                delete weeklySchedule[day];
+            }
+            
+            fillInbox();
+            renderWeeklySchedule();
+            showMessage(`Day ${day - 1} has ended. Your stats have been updated!`, 'yellow');
+
+            if (day > MAX_DAYS) {
+                showFinalScore();
+            }
+        }
+        
+        function showFinalScore() {
+            modalTitle.textContent = "Game Over!";
+            let message = "";
+            if (successScore >= WIN_SCORE_THRESHOLD) {
+                message = `Congratulations! You reached a final score of <span class="text-yellow-400 font-bold">${successScore.toFixed(0)}</span>. You mastered time management and achieved success!`;
+            } else {
+                message = `Game over. Your final score is <span class="text-yellow-400 font-bold">${successScore.toFixed(0)}</span>. Try again to improve your score!`;
+            }
+            modalContent.innerHTML = message;
+            modalCloseBtn.textContent = "Restart Game";
+            modalCloseBtn.onclick = showDifficultyModal;
+            modal.classList.remove('hidden');
+        }
+        
+        function showBurnoutModal() {
+            modalTitle.textContent = "Burnout!";
+            modalContent.innerHTML = `Your energy dropped too low. You couldn't continue. Game Over.`;
+            modalCloseBtn.textContent = "Restart Game";
+            modalCloseBtn.onclick = showDifficultyModal;
+            modal.classList.remove('hidden');
+        }
+        
+        function showDifficultyModal() {
+            difficultyModal.classList.remove('hidden');
+            modal.classList.add('hidden');
+        }
+
+        function startGame(difficulty) {
+            difficultyModal.classList.add('hidden');
+
+            switch (difficulty) {
+                case 'easy':
+                    ibGrade = 5;
+                    energy = 90;
+                    wellBeing = 60;
+                    successScore = 300;
+                    MAX_DAYS = 7;
+                    BURNOUT_THRESHOLD = 30;
+                    break;
+                case 'normal':
+                    ibGrade = 4;
+                    energy = 80;
+                    wellBeing = 50;
+                    successScore = 250;
+                    MAX_DAYS = 5;
+                    BURNOUT_THRESHOLD = 20;
+                    break;
+                case 'hard':
+                    ibGrade = 3;
+                    energy = 70;
+                    wellBeing = 40;
+                    successScore = 200;
+                    MAX_DAYS = 3;
+                    BURNOUT_THRESHOLD = 15;
+                    break;
+            }
+            
+            day = 1;
+
+            const shuffledTasks = [...allTasks].sort(() => 0.5 - Math.random());
+            tasksOnBoard = [];
+            tasksPool = shuffledTasks.map(t => ({ ...t, completedToday: false, lastDayChunksDone: 0 }));
+
+            weeklySchedule = {};
+            
+            updateUI();
+            renderTasks();
+            renderWeeklySchedule();
+            modalTitle.textContent = "Welcome to Chronos Quest!";
+            gameDaysSpan.textContent = MAX_DAYS;
+            modalContent.innerHTML = `
+                Your mission is to reach a Success Score of 500 in <span id="game-days" class="text-yellow-400 font-bold">${MAX_DAYS}</span> days by effectively managing your tasks with the Eisenhower Matrix.
+                <br><br>
+                **Drag and drop** tasks from the **Inbox** into one of the four quadrants. The game will respond to your choice immediately. Be mindful of your Energy and Well-Being!
+            `;
+            modalCloseBtn.textContent = "Start Game";
+            modalCloseBtn.onclick = () => {
+                modal.classList.add('hidden');
+                fillInbox();
+            }
+            modal.classList.remove('hidden');
+        }
+        
+        easyBtn.addEventListener('click', () => startGame('easy'));
+        normalBtn.addEventListener('click', () => startGame('normal'));
+        hardBtn.addEventListener('click', () => startGame('hard'));
+        nextDayBtn.addEventListener('click', endDay);
+        cancelScheduleBtn.addEventListener('click', () => {
+            scheduleModal.classList.add('hidden');
+            currentlyScheduledTask = null;
+            renderTasks(); 
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDragAndDrop();
+            showDifficultyModal();
+        });
+    </script>
+
+
+</body></html>
